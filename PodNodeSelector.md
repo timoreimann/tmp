@@ -282,10 +282,10 @@ To keep things simple and understandable, I usually follow these best practices 
 - Come up with a good node labelling scheme (sounds easy, but sometimes it's made overly complex)
 - Use a `clusterDefaultNodeSelector` defaulting to nodes != "production"
   - Effect: 
-    - Namespaces with no `annotations` **and** whitelists specified will inherit this setting
-    - Additional `NodeSelectors` are allowed in the pod manifest
-- For mission-critical namespaces specify `annotations` **and**whitelists
-  - Effect: Pods deployed therein will have `NodeSelectors` strictly checked and enforced (no pod manifest conflicts/ drift allowed) 
+    - Namespaces with no `annotations` **and** no whitelists specified will inherit this setting
+    - Additional `NodeSelectors` **are allowed** in the pod manifest
+- For mission-critical namespaces specify `annotations` **and** whitelists
+  - Effect: Pods deployed therein will have `NodeSelectors` strictly checked and enforced, that is **no pod manifest conflicts/ drift allowed**
 - Use role-based access controls to secure your namespaces
 
 
