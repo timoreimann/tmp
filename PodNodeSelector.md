@@ -48,9 +48,9 @@ Back to our admission controller. Now that we understand the advantages, let's d
 My demo environment is based on a three node `kubeadm` deployment, running in [VMware Fusion](https://www.vmware.com/products/fusion.html):
 
 - Kubernetes version: 1.9.2
-  - 1x "master" VM: just system pods allowed, that is core Kubernetes services
-  - 1x "production" VM: only run pods from namespace "production"
-  - 1x "development" VM: run any pod from any namespaces, except of "production"
+  - 1x "master" VM: Just system pods allowed, that is core Kubernetes services
+  - 1x "production" VM: Only run pods from namespace "production"
+  - 1x "development" VM: Run any pod from any namespaces, except of "production"
 - Kubernetes `PodNodeSelector` admission controller enabled in the API server
 
 Translated into an enterprise deployment, the following (highly abstracted) picture tries to make it clear. Here, a `kubectl` user is only allowed to deploy nginx pods into namespace "development", enforced by Kubernetes role-based access controls (RBAC). However, if she doesn't specify a `NodeSelector`, this pod could end up being scheduled on the production VMs. The `PodNodeSelector` automatically injects a `NodeSelector`, based on a default policy which we'll discuss in a minute. 
@@ -70,7 +70,7 @@ Let's run through a slightly simpler demo. What I am going to show here:
 
 Add the `PodNodeSelector` admission controller in the `--admission-control=` flag. 
 
-**Note:** the plugin order matters, as described in [Using Admission Controllers](https://kubernetes.io/docs/admin/admission-controllers/#what-are-they). Plugins are further divided into **mutating** and **validating** controllers, some like `PodNodeSelector` can even belong to both categories.
+**Note:** The plugin order matters, as described in [Using Admission Controllers](https://kubernetes.io/docs/admin/admission-controllers/#what-are-they). Plugins are further divided into **mutating** and **validating** controllers, some like `PodNodeSelector` can even belong to both categories.
 
 Assuming your cluster has been deployed with `kubeadm`, the `kube-apiserver.yaml` file is located in `/etc/kubernetes/manifests`. Also add `--admission-control-config-file`, `volumeMounts` and `volumes` sections as depicted below. They relate to the default selectors and whitelist, which we will create in a second.
 
@@ -116,7 +116,7 @@ This file defines the `default NodeSelector` for the cluster, as well as whiteli
   - Effectively, you do not have to mention namespaces with an empty whitelist in this file
 - The "noannotation" namespace is to demonstrate what happens, when there is no matching `annotation` in the namespace properties but a whitelist has been specified
 
-**Important:** for whitelists to work, every namespace has to have a matching `annotation` (this is **not** a label!). "noannotation" demonstrates what happens when there is no (matching) annotation.
+**Important:** For whitelists to work, every namespace has to have a matching `annotation` (this is **not** a label!). "noannotation" demonstrates what happens when there is no (matching) annotation.
 
 ## Prepare the Nodes (kubelets)
 
@@ -180,7 +180,7 @@ $ kubectl get deployment --all-namespaces|grep -v system
 NAMESPACE      NAME       DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
 default        nginx      1         1         1            1           19s
 development    nginx      1         1         1            1           19s
-noannotation   nginx      1         0         0            0           19s <-- Note: no pods created
+noannotation   nginx      1         0         0            0           19s <-- Note: No pods created
 production     nginx      1         1         1            1           19s
 
 $ kubectl get po --all-namespaces -o wide|grep -v system
@@ -280,6 +280,9 @@ This is nice. The admission controller checks for conflicts. And since the "ngin
 To keep things simple and understandable, I usually follow these best practices when using this admission controller:
 
 - Come up with a good node labelling scheme (sounds easy, but sometimes it's made overly complex)
+  - Kubelet `--node-labels` argument can be very useful
+    - `Labels to add when registering the node in the cluster`
+    - **Warning:** Alpha feature
 - Use a `clusterDefaultNodeSelector` defaulting to nodes != "production"
   - Effect: 
     - Namespaces with no `annotations` **and** no whitelists specified will inherit this setting
